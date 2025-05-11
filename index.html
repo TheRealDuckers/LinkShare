@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Sharing System</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; text-align: center; }
+        h1 { color: #333; }
+        input, button { padding: 10px; margin: 5px; }
+        ul { list-style: none; padding: 0; }
+        li { background: white; padding: 10px; margin: 5px; display: flex; align-items: center; border-radius: 5px; }
+        img { width: 16px; height: 16px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Shared Links</h1>
+    <input type="text" id="linkInput" placeholder="Enter a link">
+    <button onclick="addLink()">Add Link</button>
+    <ul id="linkList"></ul>
+
+    <script>
+        async function fetchMetaData(url) {
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, "text/html");
+
+                const title = doc.querySelector("title")?.innerText || url;
+                const favicon = doc.querySelector("link[rel='icon']")?.href || `${new URL(url).origin}/favicon.ico`;
+
+                return { title, favicon };
+            } catch (error) {
+                return { title: url, favicon: "https://via.placeholder.com/16" }; // Default icon if fetching fails
+            }
+        }
+
+        async function addLink() {
+            const linkInput = document.getElementById("linkInput");
+            const linkList = document.getElementById("linkList");
+            const url = linkInput.value;
+
+            if (url) {
+                const { title, favicon } = await fetchMetaData(url);
+
+                const newLink = document.createElement("li");
+                const link = document.createElement("a");
+                const icon = document.createElement("img");
+
+                icon.src = favicon;
+                link.href = url;
+                link.textContent = title;
+                link.target = "_blank";
+
+                newLink.appendChild(icon);
+                newLink.appendChild(link);
+                linkList.appendChild(newLink);
+
+                linkInput.value = ""; // Clear input after adding
+            }
+        }
+    </script>
+</body>
+</html>
